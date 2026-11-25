@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DiamondHub – Recargas de videojuegos</title>
+<style>
+:root{--bg:#f6f5fb;--card:#fff;--text:#16141f;--muted:#6b6880;--line:#e3e0f0;--accent:#7c3aed;--accent2:#f59e0b;--ok:#059669;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f0d17;--card:#1a1726;--text:#f3f1fb;--muted:#9a96b3;--line:#2c2840;--accent:#a78bfa;--accent2:#fbbf24;--ok:#34d399}}
+:root[data-theme="dark"]{--bg:#0f0d17;--card:#1a1726;--text:#f3f1fb;--muted:#9a96b3;--line:#2c2840;--accent:#a78bfa;--accent2:#fbbf24;--ok:#34d399}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.45}
+.wrap{max-width:720px;margin:0 auto;padding:16px}
+header{display:flex;justify-content:space-between;align-items:center;padding:8px 0 16px}
+.logo{font-weight:800;font-size:20px}
+.hero{background:linear-gradient(135deg,var(--accent),#ec4899);color:#fff;border-radius:18px;padding:22px;margin-bottom:20px}
+.hero h1{margin:0 0 6px;font-size:24px}.hero p{margin:0;opacity:.92}
+h2{font-size:15px;margin:22px 0 10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.step{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;margin-right:6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.opt{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:12px;text-align:left;color:var(--text);font:inherit;cursor:pointer}
+.opt.sel{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent)}
+.opt .big{font-size:26px;display:block}.opt b{display:block}.opt small{color:var(--muted)}
+.price{color:var(--ok);font-weight:700}
+input{width:100%;padding:13px;border-radius:12px;border:2px solid var(--line);background:var(--card);color:var(--text);font:inherit}
+input:focus{outline:none;border-color:var(--accent)}
+.summary{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:22px}
+.row{display:flex;justify-content:space-between;padding:4px 0}
+.total{font-size:18px;font-weight:800;border-top:1px solid var(--line);margin-top:6px;padding-top:10px}
+.buy{width:100%;margin-top:12px;padding:15px;border:0;border-radius:12px;background:var(--accent2);color:#1a1200;font-weight:800;font-size:16px;cursor:pointer}
+.buy:disabled{opacity:.45;cursor:not-allowed}
+#msg{margin-top:12px;padding:12px;border-radius:12px;background:color-mix(in srgb,var(--ok) 15%,transparent);display:none}
+.trust{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:13px;margin-top:20px;justify-content:center}
+footer{color:var(--muted);font-size:12px;text-align:center;margin:24px 0 8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><div class="logo">💎 DiamondHub</div><small style="color:var(--muted)">Recargas rápidas</small></header>
+<div class="hero"><h1>Recarga tus juegos favoritos</h1><p>Elige juego, ingresa tu ID y recibe tu recarga en minutos.</p></div>
+
+<h2><span class="step">1</span>Juego</h2>
+<div class="grid" id="games"></div>
+
+<h2><span class="step">2</span>ID de jugador</h2>
+<input id="uid" inputmode="numeric" placeholder="Ej: 123456789" autocomplete="off">
+
+<h2><span class="step">3</span>Paquete</h2>
+<div class="grid" id="packs"></div>
+
+<h2><span class="step">4</span>Método de pago</h2>
+<div class="grid" id="pay"></div>
+
+<div class="summary">
+<div class="row"><span>Juego</span><b id="sGame">–</b></div>
+<div class="row"><span>ID</span><b id="sId">–</b></div>
+<div class="row"><span>Paquete</span><b id="sPack">–</b></div>
+<div class="row total"><span>Total</span><span id="sTotal">$0.00</span></div>
+<button class="buy" id="buy" disabled>Comprar ahora</button>
+<div id="msg"></div>
+</div>
+
+<div class="trust"><span>🔒 Pago seguro</span><span>⚡ Entrega rápida</span><span>💬 Soporte</span></div>
+<footer>Sitio independiente, no afiliado a Garena, Roblox, Epic Games ni otras marcas. Precios de ejemplo.</footer>
+</div>
+
+<script>
+const GAMES={
+ff:{n:"Free Fire",i:"🔥",u:"💎 Diamantes",p:[[100,0.99],[310,2.99],[520,4.99],[1060,9.99],[2180,19.99]]},
+rb:{n:"Roblox",i:"🧱",u:"Robux",p:[[400,4.99],[800,9.99],[1700,19.99],[4500,49.99]]},
+fn:{n:"Fortnite",i:"🪂",u:"V-Bucks",p:[[1000,8.99],[2800,22.99],[5000,36.99]]},
+cod:{n:"Call of Duty Mobile",i:"🎯",u:"CP",p:[[80,0.99],[420,4.99],[880,9.99],[2400,24.99]]},
+ml:{n:"Mobile Legends",i:"⚔️",u:"Diamantes",p:[[86,1.49],[257,3.99],[514,7.99],[1163,17.99]]}
+};
+const PAYS=["💳 Tarjeta","🅿️ PayPal","🏦 Transferencia","🪙 Cripto"];
+let g="ff",pk=null,py=null;
+const $=id=>document.getElementById(id);
+function mk(el,html,cls,fn){const b=document.createElement("button");b.className=cls;b.innerHTML=html;b.onclick=fn;el.appendChild(b);return b}
+function renderGames(){const el=$("games");el.innerHTML="";
+Object.entries(GAMES).forEach(([k,v])=>{const b=mk(el,`<span class="big">${v.i}</span><b>${v.n}</b>`,"opt"+(k===g?" sel":""),()=>{g=k;pk=null;renderGames();renderPacks();upd()})})}
+function renderPacks(){const el=$("packs");el.innerHTML="";const G=GAMES[g];
+G.p.forEach((p,i)=>mk(el,`<b>${p[0].toLocaleString("es")}</b><small>${G.u}</small><span class="price">$${p[1].toFixed(2)}</span>`,"opt"+(pk===i?" sel":""),()=>{pk=i;renderPacks();upd()}))}
+function renderPay(){const el=$("pay");el.innerHTML="";
+PAYS.forEach((p,i)=>mk(el,`<b>${p}</b>`,"opt"+(py===i?" sel":""),()=>{py=i;renderPay();upd()}))}
+function upd(){const G=GAMES[g],id=$("uid").value.trim(),p=pk!==null?G.p[pk]:null;
+$("sGame").textContent=G.n;$("sId").textContent=id||"–";
+$("sPack").textContent=p?`${p[0].toLocaleString("es")} ${G.u}`:"–";
+$("sTotal").textContent="$"+(p?p[1]:0).toFixed(2);
+$("buy").disabled=!(id.length>=5&&p&&py!==null)}
+$("uid").addEventListener("input",upd);
+$("buy").onclick=()=>{const m=$("msg");m.style.display="block";
+m.textContent=`✅ Pedido listo: ${$("sPack").textContent} para ID ${$("sId").textContent} vía ${PAYS[py]}. (Demo: aquí se conectaría tu pasarela de pago.)`};
+renderGames();renderPacks();renderPay();upd();
+</script>
+</body>
+</html>
